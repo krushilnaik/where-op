@@ -1,29 +1,29 @@
-import { gql } from "@apollo/client";
 import { GetServerSideProps } from "next";
-import apolloClient from "../lib/apollo";
+import dbConnect from "../lib/db";
+import Episode from "../models/Episode";
 
 interface Props {
-	episode: {
-		episodeNumber: number;
-	};
+  episodeNumber: number;
 }
 
 const App = (props: Props) => {
-	return <div>{props.episode.episodeNumber}</div>;
+  return (
+    <main className="grid place-content-center bg-red-400">
+      <span className="text-red-200 text-9xl font-mono">
+        {props.episodeNumber}
+      </span>
+    </main>
+  );
 };
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-	const { data } = await apolloClient.query<Props>({
-		query: gql`
-			query Episode {
-				episode {
-					episodeNumber
-				}
-			}
-		`,
-	});
+  await dbConnect();
 
-	return { props: data };
+  const episode = await Episode.findOne({}, "-_id").lean().exec();
+
+  return {
+    props: { ...episode },
+  };
 };
 
 export default App;
